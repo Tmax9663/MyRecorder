@@ -1,0 +1,371 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=0.9, maximum-scale=0.9, minimum-scale=0.9">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="Author" content="tmax@tmax96.com" />
+	<link rel="icon" type="image/png" href="v2t.png">
+	<meta content="initial-scale=1, minimum-scale=1, width=device-width" name="viewport">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<title>MyRecorder</title>
+	<style>		
+	.normal {
+		color: #333;
+	}
+	
+	.blinking {
+		animation: blinkingText 0.8s infinite;
+	}
+	
+	@keyframes blinkingText {
+		0% {
+			color: #f00;
+		}
+		49% {
+			color: transparent;
+		}
+		50% {
+			color: transparent;
+		}
+		100% {
+			color: #f00;
+		}
+	}
+	
+	.action {
+		cursor: pointer;
+		float: right;
+		padding-top: 3px;
+		margin-right: 20px;
+		color: #fff;
+	}
+	
+	.action:hover {
+		color: #d00;
+	}
+	
+	button {
+		color: #666;
+		border-radius: 5px;
+	}
+	
+	.footer {
+		position: fixed;
+		left: 0px;
+		bottom: 0px;
+		width: 100%;
+		background-color: #004d4d;
+		padding: 5px;
+		vertical-align: middle;
+		z-index: 100;
+	}
+	
+	#selector {
+		position: fixed;
+		left: 0px;
+		top: 0px;
+		display: none;
+		border: 1px solid #333;
+		width: 100%;
+		padding: 10px;
+		background-color: #004d4d;
+		z-index: 100;
+	}
+	
+	.content {
+		margin-top: 50px;
+	}
+
+	#previewUl {
+		list-style: none;
+	}
+	</style>
+</head>
+<body>
+	<div id="selector"> 
+		<i class="material-icons action" onclick="closeSelector();">highlight_off</i>
+		<select id="audioSource" style="display:inline-block;"></select> &nbsp;
+		<select id="videoSource" style="display:inline-block;"></select>
+	</div>
+	<div class="content">
+		<canvas id="level" height="50" width="300" style="display: none;"></canvas>
+		<video id="videoShow" muted="true" autoplay="true" style="display: none" width="240px" height="180px"></video>
+	</div>
+	<lable style="margin-top: 10px;">
+		<ul id="previewUl"></ul>
+	</lable>
+	<div class="footer">
+		<button id="startAudio" onclick="startButton(event)"><i class="material-icons">mic</i></button>&nbsp;
+		<button id="startVideo" onclick="startVideoButton(event)"><i class="material-icons">videocam</i></button> 
+		<i class="material-icons action" onclick="setting();">settings</i> 
+	</div>
+	<script>
+	'use strict'
+	let stream, recorder, chunks, media, audioStream, recording = false;
+	let videoRecorder, videoChunks, videoStream, videomedia, videoRecording = false;
+	let timestamp, eventTimeStamp;
+	const audioInputSelect = document.querySelector('#audioSource');
+	const videoInputSelect = document.querySelector('#videoSource');
+	const startAudioBtn = document.querySelector('#startAudio');
+	const startVideoBtn = document.querySelector('#startVideo');
+	const previewUl = document.querySelector('#previewUl');
+	const videoShow = document.querySelector('#videoShow');
+	const level = document.querySelector('#level');
+	const selector = document.querySelector('#selector');
+
+	if(!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+		console.log("enumerateDevices() not supported.");
+	}
+
+	navigator.mediaDevices.enumerateDevices().then(function(devices) {
+		devices.forEach(function(device) {
+			const option = document.createElement('option');
+			option.value = device.deviceId;
+			if(device.kind === 'audioinput') {
+				console.log(device.kind + ": " + device.label + " id = " + device.deviceId + " groupid = " + device.groupId);
+				if(device.deviceId != 'default' && device.deviceId != 'communications') {
+					option.text = device.label;
+					audioInputSelect.appendChild(option);
+				}
+			}
+			if(device.kind === 'videoinput') {
+				console.log(device.kind + ": " + device.label + " id = " + device.deviceId + " groupid = " + device.groupId);
+				if(device.deviceId != 'default' && device.deviceId != 'communications') {
+					option.text = device.label;
+					videoInputSelect.appendChild(option);
+				}
+			}
+		});
+	}).catch(function(err) {
+		console.log(err.name + ": " + err.message);
+	});
+
+	const start = (constraints) => {
+		navigator.mediaDevices.getUserMedia(constraints).then(_stream => {
+			stream = _stream;
+			audioStream = _stream;
+			makeWaveform(stream);
+			recorder = new MediaRecorder(stream);
+			recording = true;
+			recorder.start();
+			recorder.ondataavailable = e => {
+				chunks.push(e.data);
+				if(recorder.state == 'inactive') makeWavLink();
+			};
+			console.log('got media successfully :' + audioSource);
+		}).catch(function(err) {
+			console.log(err.name + ": " + err.message);
+		});
+	}
+
+	const startButton = (event) => {
+		if(recording) {
+			recorder.stop();
+			if(audioStream) {
+				audioStream.getTracks().forEach(track => {
+					track.stop();
+					console.log('audio timeLapse : ' + timesInSec(Math.round(parseInt(event.timeStamp) - parseInt(eventTimeStamp)) / 1000));
+					level.style.display = 'none';
+					startAudioBtn.style.color = "#666";
+					replaceClass(startAudioBtn, 'blinking', 'normal');
+				});
+			}
+			recording = false;
+			return;
+		} else {
+			const audioSource = audioInputSelect.value;
+			const constraints = {
+				audio: {
+					tag: 'audio',
+					type: 'audio/wav',
+					ext: '.wav',
+					deviceId: audioSource ? {
+						exact: audioSource
+					} : undefined,
+					gUM: {
+						audio: true
+					}
+				},
+				video: false
+			};
+			media = constraints.audio;
+			timestamp = GetTimeStamp();
+			start(constraints);
+			level.style.display = "inline-block";
+			startAudioBtn.style.color = "#f00";
+			replaceClass(startAudioBtn, 'normal', 'blinking');
+			chunks = [];
+			eventTimeStamp = event.timeStamp;
+		}
+	}
+
+	const makeWavLink = () => {
+		let blob = new Blob(chunks, {
+				type: media.type
+			}),
+			url = URL.createObjectURL(blob),
+			li = document.createElement('li'),
+			mt = document.createElement(media.tag),
+			hf = document.createElement('a');
+		mt.controls = true;
+		mt.src = url;
+		hf.href = url;
+		hf.download = `${timestamp}${media.ext}`;
+		hf.innerHTML = '&nbsp;' + `${hf.download}`;
+		let audio = document.createElement('audio');
+		audio.autoplay = true;
+		audio.src = url;
+		audio.volume = 0.4;
+		audio.controls = true;
+		li.appendChild(audio);
+		li.appendChild(hf);
+		previewUl.appendChild(li);
+		//hf.click();		
+	}
+
+	const makeWaveform = (stream) => {
+		window.persistAudioStream = stream;
+		let audioContent = new AudioContext();
+		let audioStream = audioContent.createMediaStreamSource(stream);
+		let analyser = audioContent.createAnalyser();
+		let bufferLength = analyser.frequencyBinCount;
+		let dataArray = new Uint8Array(bufferLength);
+		let width = 300,
+			height = 50;
+		let canvasCtx = level.getContext("2d");
+		audioStream.connect(analyser);
+		canvasCtx.clearRect(0, 0, width, height);
+		function draw() {
+			let drawVisual = requestAnimationFrame(draw);
+			analyser.getByteTimeDomainData(dataArray);
+			canvasCtx.fillStyle = '#666'; //rgb(125,125,125)';
+			canvasCtx.fillRect(0, 0, width, height);
+			canvasCtx.lineWidth = 2;
+			canvasCtx.strokeStyle = 'rgb(0, 255, 0)';
+			canvasCtx.beginPath();
+			let sliceWidth = width * 1.0 / bufferLength;
+			let x = 0;
+			for(let i = 0; i < bufferLength; i++) {
+				let v = dataArray[i] / 128.0;
+				let y = v * height / 2;
+				if(i === 0) {
+					canvasCtx.moveTo(x, y);
+				} else {
+					canvasCtx.lineTo(x, y);
+				}
+				x += sliceWidth;
+			}
+			canvasCtx.lineTo(width, height / 2);
+			canvasCtx.stroke();
+		};
+		draw();
+	}
+
+	const startVideo = (constraints) => {
+		navigator.mediaDevices.getUserMedia(constraints).then(_stream => {
+			stream = _stream;
+			videoStream = _stream;
+			videoShow.srcObject = _stream;
+			videoRecorder = new MediaRecorder(stream);
+			videoRecording = true;
+			videoRecorder.start();
+			videoRecorder.ondataavailable = e => {
+				videoChunks.push(e.data);
+				if(videoRecorder.state == 'inactive') makeVideoLink();
+			};
+			console.log('got video media successfully :' + videoSource);
+		}).catch(function(err) {
+			console.log(err.name + ": " + err.message);
+		});
+	}
+
+	const startVideoButton = (event) => {
+		if(videoRecording) {
+			videoRecorder.stop();
+			if(videoStream) {
+				videoStream.getTracks().forEach(track => {
+					track.stop();
+					startVideoBtn.style.color = "#666";
+					replaceClass(startVideoBtn, 'blinking', 'normal');
+					videoShow.style.display = "none"
+				});
+				console.log('video timeLapse : ' + timesInSec(Math.round(parseInt(event.timeStamp) - parseInt(eventTimeStamp)) / 1000));
+			}
+			videoRecording = false;
+			return;
+		} else {
+			const videoSource = videoInputSelect.value;
+			const constraints = {
+				audio: true,
+				video: {
+					type: 'video/mp4',
+					ext: '.mp4',
+					deviceId: videoSource ? {
+						exact: videoSource
+					} : undefined,
+				}
+			};
+			videomedia = constraints.video;
+			timestamp = GetTimeStamp();
+			startVideo(constraints);
+			replaceClass(startVideoBtn, 'normal', 'blinking');
+			videoShow.style.display = "inline-block"
+			startVideoBtn.style.color = "#f00";
+			videoChunks = [];
+			eventTimeStamp = event.timeStamp;
+		}
+	}
+
+	const makeVideoLink = () => {
+		let blob = new Blob(videoChunks, {
+				type: videomedia.type
+			}),
+			url = URL.createObjectURL(blob),
+			li = document.createElement('li'),
+			mt = document.createElement(videomedia.tag),
+			hf = document.createElement('a');
+		mt.controls = true;
+		mt.src = url;
+		hf.href = url;
+		hf.download = `${timestamp}${videomedia.ext}`;
+		hf.innerHTML = '&nbsp;' + `${hf.download}`;
+		let video = document.createElement('video');
+		video.autoplay = true;
+		video.style.width = "120px";
+		video.style.height = "90px";
+		video.src = url;
+		li.appendChild(video);
+		li.appendChild(hf);
+		previewUl.appendChild(li);
+	}
+
+	const replaceClass = (obj, fromClass, toClass) => {
+		obj.classList.remove(fromClass);
+		obj.classList.add(toClass);
+	}
+
+	const setting = () => {
+		selector.style.display = "inline-block";
+	}
+
+	const closeSelector = () => {
+		selector.style.display = "none";
+	}
+	const pad = (n) => {
+		return n < 10 ? '0' + n.toString(10) : n.toString(10);
+	}
+
+	const GetTimeStamp = () => {
+		let d = new Date();
+		return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '_' + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
+	}
+
+	const timesInSec = (tick) => {
+		const result = new Date(tick * 1000).toISOString().substr(11, 8);
+		return(result.substr(3, 2) + ':' + result.substr(6, 2) + ' s');
+	};
+	</script>
+</body>
+
+</html>

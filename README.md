@@ -4,7 +4,6 @@
 Features real-time audio , video recording with navigator.mediaDevices.getUserMedia().
 - save audio / video blob to file.
 
-
 ### MIT Licence
 
 Copyright (c) 2020 Tmax

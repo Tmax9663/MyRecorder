@@ -95,8 +95,8 @@
       </div>
       <script>
          'use strict'
-         let recorder, chunks, media, audioStream, recording = false;
-         let videoRecorder, videoChunks, videoStream, videomedia, videoRecording = false;
+         let audioRecorder, audioChunks, audioMedia, audioStream, audioRecording = false;
+         let videoRecorder, videoChunks, videoMedia, videoStream, videoRecording = false;
          let timestamp, eventTimeStamp;
          const audioInputSelect = document.querySelector('#audioSource');
          const videoInputSelect = document.querySelector('#videoSource');
@@ -138,12 +138,12 @@
          	navigator.mediaDevices.getUserMedia(constraints).then(_stream => {
          		audioStream = _stream;
          		makeWaveform(audioStream);
-         		recorder = new MediaRecorder(audioStream);
-         		recording = true;
-         		recorder.start();
-         		recorder.ondataavailable = e => {
-         			chunks.push(e.data);
-         			if(recorder.state == 'inactive') makeWavLink();
+         		audioRecorder = new MediaRecorder(audioStream);
+         		audioRecording = true;
+         		audioRecorder.start();
+         		audioRecorder.ondataavailable = e => {
+         			audioChunks.push(e.data);
+         			if(audioRecorder.state == 'inactive') makeWavLink();
          		};
          		console.log('got media successfully :' + audioSource);
          	}).catch(function(err) {
@@ -152,8 +152,8 @@
          }
          
          const startButton = (event) => {
-         	if(recording) {
-         		recorder.stop();
+         	if(audioRecording) {
+         		audioRecorder.stop();
          		if(audioStream) {
          			audioStream.getTracks().forEach(track => {
          				track.stop();
@@ -163,7 +163,7 @@
          				replaceClass(startAudioBtn, 'blinking', 'normal');
          			});
          		}
-         		recording = false;
+         		audioRecording = false;
          		return;
          	} else {
          		const audioSource = audioInputSelect.value;
@@ -181,29 +181,26 @@
          			},
          			video: false
          		};
-         		media = constraints.audio;
+         		audioMedia = constraints.audio;
          		timestamp = GetTimeStamp();
          		start(constraints);
          		level.style.display = "inline-block";
          		startAudioBtn.style.color = "#f00";
          		replaceClass(startAudioBtn, 'normal', 'blinking');
-         		chunks = [];
+         		audioChunks = [];
          		eventTimeStamp = event.timeStamp;
          	}
          }
          
          const makeWavLink = () => {
-         	let blob = new Blob(chunks, {
-         			type: media.type
+         	let blob = new Blob(audioChunks, {
+         			type: audioMedia.type
          		}),
          		url = URL.createObjectURL(blob),
          		li = document.createElement('li'),
-         		mt = document.createElement(media.tag),
          		hf = document.createElement('a');
-         	mt.controls = true;
-         	mt.src = url;
          	hf.href = url;
-         	hf.download = `${timestamp}${media.ext}`;
+         	hf.download = `${timestamp}${audioMedia.ext}`;
          	hf.innerHTML = '&nbsp;' + `${hf.download}`;
          	let audio = document.createElement('audio');
          	audio.autoplay = true;
@@ -223,8 +220,7 @@
          	let analyser = audioContent.createAnalyser();
          	let bufferLength = analyser.frequencyBinCount;
          	let dataArray = new Uint8Array(bufferLength);
-         	let width = 300,
-         		height = 50;
+         	let width = 300, height = 50;
          	let canvasCtx = level.getContext("2d");
          	audioStream.connect(analyser);
          	canvasCtx.clearRect(0, 0, width, height);
@@ -297,7 +293,7 @@
          				} : undefined,
          			}
          		};
-         		videomedia = constraints.video;
+         		videoMedia = constraints.video;
          		timestamp = GetTimeStamp();
          		startVideo(constraints);
          		replaceClass(startVideoBtn, 'normal', 'blinking');
@@ -310,16 +306,13 @@
          
          const makeVideoLink = () => {
          	let blob = new Blob(videoChunks, {
-         			type: videomedia.type
+         			type: videoMedia.type
          		}),
          		url = URL.createObjectURL(blob),
          		li = document.createElement('li'),
-         		mt = document.createElement(videomedia.tag),
          		hf = document.createElement('a');
-         	mt.controls = true;
-         	mt.src = url;
          	hf.href = url;
-         	hf.download = `${timestamp}${videomedia.ext}`;
+         	hf.download = `${timestamp}${videoMedia.ext}`;
          	hf.innerHTML = '&nbsp;' + `${hf.download}`;
          	let video = document.createElement('video');
          	video.autoplay = true;

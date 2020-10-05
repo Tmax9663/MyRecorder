@@ -95,7 +95,7 @@
       </div>
       <script>
          'use strict'
-         let stream, recorder, chunks, media, audioStream, recording = false;
+         let recorder, chunks, media, audioStream, recording = false;
          let videoRecorder, videoChunks, videoStream, videomedia, videoRecording = false;
          let timestamp, eventTimeStamp;
          const audioInputSelect = document.querySelector('#audioSource');
@@ -136,10 +136,9 @@
          
          const start = (constraints) => {
          	navigator.mediaDevices.getUserMedia(constraints).then(_stream => {
-         		stream = _stream;
          		audioStream = _stream;
-         		makeWaveform(stream);
-         		recorder = new MediaRecorder(stream);
+         		makeWaveform(audioStream);
+         		recorder = new MediaRecorder(audioStream);
          		recording = true;
          		recorder.start();
          		recorder.ondataavailable = e => {
@@ -257,10 +256,9 @@
          
          const startVideo = (constraints) => {
          	navigator.mediaDevices.getUserMedia(constraints).then(_stream => {
-         		stream = _stream;
          		videoStream = _stream;
-         		videoShow.srcObject = _stream;
-         		videoRecorder = new MediaRecorder(stream);
+         		videoShow.srcObject = videoStream;
+         		videoRecorder = new MediaRecorder(videoStream);
          		videoRecording = true;
          		videoRecorder.start();
          		videoRecorder.ondataavailable = e => {

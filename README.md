@@ -1,4 +1,4 @@
-# MyRecorder [![N|Solid](https://nbt.tmax96.com/MyRec/myrec.png)](https://nbt.tmax96.com/MyRec/)
+# MyRecorder [![N|Solid](https://tmax9663.github.io/MyRecorder/myrec.png)](https://tmax9663.github.io/MyRecorder/)
 
 ### Implementing web recording running with vanilla javascript.
 Features real-time audio , video recording with navigator.mediaDevices.getUserMedia().

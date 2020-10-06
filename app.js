@@ -1,5 +1,3 @@
-
-
 'use strict'
 let audioRecorder, audioChunks, audioMedia, audioStream, audioRecording = false;
 let videoRecorder, videoChunks, videoMedia, videoStream, videoRecording = false;
@@ -244,6 +242,7 @@ const setting = () => {
 const closeSelector = () => {
 	selector.style.display = "none";
 }
+
 const pad = (n) => {
 	return n < 10 ? '0' + n.toString(10) : n.toString(10);
 }
@@ -257,4 +256,3 @@ const timesInSec = (tick) => {
 	const result = new Date(tick * 1000).toISOString().substr(11, 8);
 	return (result.substr(3, 2) + ':' + result.substr(6, 2) + ' s');
 };
-

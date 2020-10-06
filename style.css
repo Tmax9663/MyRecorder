@@ -1,0 +1,91 @@
+
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	width: 100%;
+}
+
+button {
+	color: #666;
+	border-radius: 5px;
+}
+
+.normal {
+	color: #333;
+}
+
+.blinking {
+	animation: blinkingText 0.8s infinite;
+}
+
+@keyframes blinkingText {
+	0% {
+		color: #f00;
+	}
+	49% {
+		color: transparent;
+	}
+	50% {
+		color: transparent;
+	}
+	100% {
+		color: #f00;
+	}
+}
+
+.action {
+	cursor: pointer;
+	float: right;
+	padding-top: 3px;
+	margin-right: 20px;
+	color: #fff;
+}
+
+.action:hover {
+	color: #d00;
+}
+
+.content {
+	margin-top: 50px;
+}
+
+.footer {
+	position: fixed;
+	left: 0px;
+	bottom: 0px;
+	width: 100%;
+	background-color: #004d4d;
+	padding: 5px;
+	vertical-align: middle;
+	z-index: 100;
+}
+
+#previewUl {
+	list-style: none;
+}
+
+#selector {
+	position: fixed;
+	left: 0px;
+	top: 0px;
+	display: none;
+	border: 1px solid #333;
+	width: 100%;
+	padding: 10px;
+	background-color: #004d4d;
+	z-index: 100;
+}
+
+#videoShow {
+	position: fixed;
+	top: 0px;
+	height: 100%;
+	width: 100%;
+	object-fit: cover;
+	z-index: 1;
+	transform: scaleX(-1);
+	filter: FlipH;
+}

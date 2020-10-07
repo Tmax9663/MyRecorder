@@ -15,8 +15,8 @@ if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
 	console.log("enumerateDevices() not supported.");
 }
 
-navigator.mediaDevices.enumerateDevices().then(function (devices) {
-	devices.forEach(function (device) {
+navigator.mediaDevices.enumerateDevices().then( devices => {
+	devices.forEach( device => {
 		const option = document.createElement('option');
 		option.value = device.deviceId;
 		if (device.kind === 'audioinput') {
@@ -34,7 +34,7 @@ navigator.mediaDevices.enumerateDevices().then(function (devices) {
 			}
 		}
 	});
-}).catch(function (err) {
+}).catch(err=> {
 	console.log(err.name + ": " + err.message);
 });
 
@@ -50,7 +50,7 @@ const start = (constraints) => {
 			if (audioRecorder.state == 'inactive') makeWavLink();
 		};
 		console.log('got media successfully :' + audioSource);
-	}).catch(function (err) {
+	}).catch(err=> {
 		console.log(err.name + ": " + err.message);
 	});
 }
@@ -130,7 +130,7 @@ const makeWaveform = (stream) => {
 	audioStream.connect(analyser);
 	canvasCtx.clearRect(0, 0, width, height);
 
-	function draw() {
+	 const draw=()=> {
 		let drawVisual = requestAnimationFrame(draw);
 		analyser.getByteTimeDomainData(dataArray);
 		canvasCtx.fillStyle = '#666'; //rgb(125,125,125)';
@@ -168,7 +168,7 @@ const startVideo = (constraints) => {
 			if (videoRecorder.state == 'inactive') makeVideoLink();
 		};
 		console.log('got video media successfully :' + videoSource);
-	}).catch(function (err) {
+	}).catch( err=> {
 		console.log(err.name + ": " + err.message);
 	});
 }

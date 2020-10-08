@@ -2,6 +2,7 @@
 let audioRecorder, audioChunks, audioMedia, audioStream, audioRecording = false;
 let videoRecorder, videoChunks, videoMedia, videoStream, videoRecording = false;
 let timestamp, eventTimeStamp;
+let startRecordTime;
 const audioInputSelect = document.querySelector('#audioSource');
 const videoInputSelect = document.querySelector('#videoSource');
 const startAudioBtn = document.querySelector('#startAudio');
@@ -10,6 +11,7 @@ const previewUl = document.querySelector('#previewUl');
 const videoShow = document.querySelector('#videoShow');
 const level = document.querySelector('#level');
 const selector = document.querySelector('#selector');
+const audioDuration=document.querySelector('#audioDuration');
 
 if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
 	console.log("enumerateDevices() not supported.");
@@ -87,6 +89,7 @@ const startButton = (event) => {
 		};
 		audioMedia = constraints.audio;
 		timestamp = GetTimeStamp();
+		startRecordTime=parseInt(performance.now());
 		start(constraints);
 		level.style.display = "inline-block";
 		startAudioBtn.style.color = "#f00";
@@ -152,6 +155,9 @@ const makeWaveform = (stream) => {
 		}
 		canvasCtx.lineTo(width, height / 2);
 		canvasCtx.stroke();
+		if (audioRecording) {
+			audioDuration.innerHTML=timesInSec(Math.round(parseInt(performance.now())-startRecordTime)/ 1000);   
+		}
 	};
 	draw();
 }

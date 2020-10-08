@@ -128,8 +128,7 @@ const makeWaveform = (stream) => {
 	let analyser = audioContent.createAnalyser();
 	let bufferLength = analyser.frequencyBinCount;
 	let dataArray = new Uint8Array(bufferLength);
-	let width = 300,
-		height = 50;
+	let width = level.width, height = level.height;
 	let canvasCtx = level.getContext("2d");
 	audioStream.connect(analyser);
 	canvasCtx.clearRect(0, 0, width, height);

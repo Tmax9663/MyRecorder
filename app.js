@@ -10,6 +10,7 @@ const startVideoBtn = document.querySelector('#startVideo');
 const previewUl = document.querySelector('#previewUl');
 const videoShow = document.querySelector('#videoShow');
 const level = document.querySelector('#level');
+const fullScreen=document.querySelector('.fullScreen');
 const selector = document.querySelector('#selector');
 const audioDuration=document.querySelector('#audioDuration');
 
@@ -64,7 +65,7 @@ const startButton = (event) => {
 			audioStream.getTracks().forEach(track => {
 				track.stop();
 				console.log('audio timeLapse : ' + timesInSec(Math.round(parseInt(event.timeStamp) - parseInt(eventTimeStamp)) / 1000));
-				level.style.display = 'none';
+				fullScreen.style.display = 'none';
 				startAudioBtn.style.color = "#666";
 				replaceClass(startAudioBtn, 'blinking', 'normal');
 			});
@@ -91,7 +92,7 @@ const startButton = (event) => {
 		timestamp = GetTimeStamp();
 		startRecordTime=parseInt(performance.now());
 		start(constraints);
-		level.style.display = "inline-block";
+		fullScreen.style.display = "inline-block";
 		startAudioBtn.style.color = "#f00";
 		replaceClass(startAudioBtn, 'normal', 'blinking');
 		audioChunks = [];

@@ -112,3 +112,12 @@ button {
 	transform: scaleX(-1);
 	filter: FlipH;
 }
+
+#rec-link {
+	position:fixed;
+	top:0;
+	right:0;
+	border:0;
+	margin:0;
+	z-index:1000;
+}
